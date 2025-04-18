@@ -23,6 +23,14 @@ int main(int argc, char **argv) {
     char *input_oid_str = argv[2];
 
     LOG_INFO("input oid = %s action = %s", input_oid_str, action);
+
+    LOG_DEBUG("Это отладка");   // Выводится, если LOG_LEVEL <= 0
+    LOG_INFO("Информация");     // Выводится, если LOG_LEVEL <= 1
+    LOG_WARN("Предупреждение"); // Выводится, если LOG_LEVEL <= 2
+    LOG_ERROR("Ошибка");        // Выводится, если LOG_LEVEL <= 3
+    LOG_FATAL("Критично");      // Выводится, если LOG_LEVEL <= 4
+
+
     return 0;
 }
 
