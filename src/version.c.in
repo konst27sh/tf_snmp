@@ -1,0 +1,9 @@
+#include "version.h"
+
+const char* app_get_version() {
+    return "@FULL_VERSION@";
+}
+
+const char* app_get_build_info() {
+    return "Git commit: @GIT_COMMIT_HASH@\nBuild time: @TIMESTAMP@";
+}
