@@ -6,7 +6,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=tf_snmp
 
-PKG_VERSION:=${shell (grep -oP 'APP_VERSION_MAJOR\s*\(\s*\K\d+' "$(CURDIR)/src/version.h")}
+PKG_VERSION:=${shell (grep -oP 'PKG_VERSION_MAKE\s*\(\s*\K\d+' "$(CURDIR)/src/version.h")}
 PKG_RELEASE:=${shell (grep -oP 'APP_VERSION_MINOR\s*\(\s*\K\d+' "$(CURDIR)/src/version.h")}
 
 PKG_MAINTAINER:=Belyaev Alex <abelyaev@fort-telecom.ru>

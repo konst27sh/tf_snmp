@@ -9,7 +9,6 @@
 #include "poeStatus/poeStatus_main.h"
 
 int main(const int argc, char **argv) {
-    //printf("LOG_LEVEL = %d\n", LOG_LEVEL);
     LOG_DEBUG("Start %s v%d.%d.%d", // Добавлен APP_VERSION_PATCH
               APP_NAME,
               APP_VERSION_MAJOR,

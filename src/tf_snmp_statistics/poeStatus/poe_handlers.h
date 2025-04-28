@@ -5,10 +5,10 @@
 #ifndef TF_SNMP_POE_HANDLERS_H
 #define TF_SNMP_POE_HANDLERS_H
 
-void get_poeIndex(uint16_t index);
-void get_poeStatus(uint16_t index);
-void get_poePower(uint16_t index);
+#include "../tf_snmp_module.h"
 
-
+void get_poeIndex(StaticTreeNode *node);
+void get_poeStatus(StaticTreeNode *node);
+void get_poePower(StaticTreeNode *node);
 
 #endif //TF_SNMP_POE_HANDLERS_H

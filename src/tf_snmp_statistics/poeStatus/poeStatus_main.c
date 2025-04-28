@@ -4,7 +4,6 @@
 
 #include <string.h>
 #include <stdlib.h>
-#include "../tf_snmp_module.h"
 #include "../utils.h"
 #include "poeStatus_main.h"
 #include "poe_handlers.h"
@@ -208,11 +207,13 @@ void print_tree_debug(uint16_t node_idx, int level) {
 void print_node_info(uint16_t node_idx) {
     Tree_NodeClass *node = &node_pool[node_idx];
     char oid_buf[256];
+    char oid[256];
     get_full_oid(node_idx, oid_buf);
-
+    strcpy(oid, "1.");
+    strcat(oid, oid_buf);
     #if LOG_LEVEL > LOG_LEVEL_INFO
-        printf("%s\n", oid_buf);
-        printf("%s\n", node_type_to_str(node->type));
+        printf("%s\n", oid);
+        printf("%s\n", node_type_to_str(node->staticTreeNode.type));
     #else
         LOG_INFO("%s", oid_buf);
         LOG_INFO("%s", node_type_to_str(node->staticTreeNode.type));
