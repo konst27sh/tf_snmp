@@ -41,11 +41,15 @@ uint16_t add_node(int oid_component, const char *name, NodeType type,
         Tree_NodeClass *parent = &node_pool[parent_idx];
 
         // Добавляем как первого ребенка или к sibling цепи
-        if (parent->staticTreeNode.first_child_idx == 0xFFFF) {
+        if (parent->staticTreeNode.first_child_idx == 0xFFFF)
+        {
             parent->staticTreeNode.first_child_idx = node_count;
-        } else {
+        }
+        else
+        {
             uint16_t sibling = parent->staticTreeNode.first_child_idx;
-            while (node_pool[sibling].staticTreeNode.next_sibling_idx != 0xFFFF) {
+            while (node_pool[sibling].staticTreeNode.next_sibling_idx != 0xFFFF)
+            {
                 sibling = node_pool[sibling].staticTreeNode.next_sibling_idx;
             }
             node_pool[sibling].staticTreeNode.next_sibling_idx = node_count;
@@ -119,21 +123,44 @@ int parse_oid(const char *oid_str, int *oid_buf)
 uint16_t find_oid_node(const int *oid, int oid_len) 
 {
     uint16_t current_node = 0;
-    for (int depth = 0; depth < oid_len; depth++) {
+    LOG_DEBUG("oid_len = %d", oid_len);
+    for (int depth = 0; depth < oid_len; depth++)
+    {
+        LOG_DEBUG("------------------------------------");
         Tree_NodeClass *node = &node_pool[current_node];
         uint16_t next_node = 0xFFFF;
 
         // Перебираем всех сиблингов текущего узла
-        while (node != NULL) {
-            if (node->staticTreeNode.oid_component == oid[depth]) {
+        while (node != NULL)
+        {
+            LOG_DEBUG("depth = %d -- oid[depth] = %d -- oid_component = %d", depth, oid[depth], node->staticTreeNode.oid_component);
+            if (node->staticTreeNode.oid_component == oid[depth])
+            {
+                LOG_DEBUG("if next_node -> %d", depth == oid_len - 1);
+                LOG_DEBUG("child_idx = %d -- current_node = %d", node->staticTreeNode.first_child_idx, current_node);
                 next_node = (depth == oid_len - 1) ? current_node : node->staticTreeNode.first_child_idx;
+                LOG_DEBUG("next_node = %d", next_node);
                 break;
             }
+            LOG_DEBUG("next_sibling_idx = %d", node->staticTreeNode.next_sibling_idx);
+            current_node = node->staticTreeNode.next_sibling_idx;
             node = (node->staticTreeNode.next_sibling_idx != 0xFFFF) ? &node_pool[node->staticTreeNode.next_sibling_idx] : NULL;
+
+            if (node != NULL)
+            {
+                LOG_DEBUG("next_sibling_idx = %d", node->staticTreeNode.next_sibling_idx);
+            }
+            else
+            {
+                LOG_DEBUG("node != NULL");
+            }
         }
-        if (next_node == 0xFFFF) return 0xFFFF;
+        if (next_node == 0xFFFF)
+            return 0xFFFF;
+        LOG_DEBUG("next_node 2 = %d", next_node);
         current_node = next_node;
     }
+    LOG_DEBUG("current_node = %d", current_node);
     return current_node;
 }
 
@@ -164,37 +191,45 @@ uint16_t get_next_oid(uint16_t current_idx, const int *oid, int depth) {
 
 // Получение полного OID
 void get_full_oid(uint16_t node_idx, char *buf) {
-    int components[MAX_OID_DEPTH];
+    int components[MAX_OID_DEPTH+1];
     int depth = 0;
     uint16_t current = node_idx;
-
+    LOG_DEV("node_idx = %hu", node_idx);
     // Собираем компоненты от узла к корню
-    while (current != 0xFFFF && depth < MAX_OID_DEPTH) {
-        components[depth++] = node_pool[current].staticTreeNode.oid_component;
+    while (current != 0xFFFF && depth <= MAX_OID_DEPTH) {
+        components[depth] = node_pool[current].staticTreeNode.oid_component;
+        LOG_DEV("depth = %d -- components = %d", depth, components[depth]);
+        depth++;
         current = node_pool[current].staticTreeNode.parent_idx;
+        LOG_DEV("current = %d", current);
     }
 
     // Формируем строку в обратном порядке (начиная с корня)
     buf[0] = '\0';
     for (int i = depth - 1; i >= 0; i--) {
-        char num[12];
+        char num[MAX_OID_DEPTH+1];
         snprintf(num, sizeof(num), "%s%d", (i == depth - 1) ? "" : ".", components[i]);
         strcat(buf, num);
     }
 }
 
 // Отладочный вывод дерева
-void print_tree_debug(uint16_t node_idx, int level) {
+void print_tree_debug(uint16_t node_idx, int level)
+{
     if(node_idx == 0xFFFF) return;
     Tree_NodeClass *node = &node_pool[node_idx];
     char oid_buf[256];
     get_full_oid(node_idx, oid_buf);
 
     for(int i = 0; i < level; i++) printf("  ");
-    printf("%s (OID: %s, Type: %s)\n",
+       printf("\n%s - OID: %s,  P: %d, C: %d, S: %d, INDEX: %d",
            node->staticTreeNode.name,
            oid_buf,
-           node_type_to_str(node->staticTreeNode.type));
+               node->staticTreeNode.parent_idx,
+               node->staticTreeNode.first_child_idx,
+               node->staticTreeNode.next_sibling_idx,
+               node->staticTreeNode.oid_component
+               );
 
     if(node->staticTreeNode.first_child_idx != 0xFFFF) {
         print_tree_debug(node->staticTreeNode.first_child_idx, level + 1);
@@ -219,7 +254,8 @@ void print_node_info(uint16_t node_idx) {
         LOG_INFO("%s", node_type_to_str(node->staticTreeNode.type));
     #endif
 
-    if (node->staticTreeNode.type != NODE_INTERNAL) {
+    if (node->staticTreeNode.type != NODE_INTERNAL)
+    {
         if (node->staticTreeNode.type == NODE_LEAF_INT)
         {
             if (node->handlerFunc != NULL)
@@ -231,10 +267,10 @@ void print_node_info(uint16_t node_idx) {
                 printf("N/A (handler missing)\n");
             }
         }
-        else
-        {
-            printf("%s\n", (char *)node->staticTreeNode.data);
-        }
+        //else
+        //{
+        //    printf("%s\n", (char *)node->staticTreeNode.data);
+        //}
     }
     else
     {

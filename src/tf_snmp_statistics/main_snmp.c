@@ -28,14 +28,15 @@ int main(const int argc, char **argv) {
     int oid_len = parse_oid(argv[2], oid);
 
     init_mib_tree();
-    #if DEBUG
-        LOG_DEV("Full MIB structure:\n");
-        #if LOG_LEVEL == LOG_LEVEL_DEV
-                print_tree_debug(0, 0);
-        #endif
+
+    #if LOG_LEVEL < LOG_LEVEL_INFO
+        LOG_DEBUG("Full MIB structure:\n");
+        print_tree_debug(0, 0);
     #endif
+
     if(strcmp(argv[1], "-g") == 0) {
         uint16_t node = find_oid_node(oid, oid_len);
+        //print_tree_debug(node, node);
         if(node == 0xFFFF) {
             LOG_INFO("OID not found\n");
             return 1;
@@ -43,20 +44,18 @@ int main(const int argc, char **argv) {
         char oid_buf[256];
         get_full_oid(node, oid_buf);
         LOG_INFO("current OID = %s", oid_buf);
-        print_tree_debug(node, node);
+        print_node_info(node);
     }
     else if(strcmp(argv[1], "-n") == 0) {
         LOG_DEV("GET NEXT REQUEST");
         uint16_t start_node = find_oid_node(oid, oid_len);
         if(start_node == 0xFFFF) start_node = find_min_subtree(0);
-
         uint16_t next_node = get_next_node(0, oid, 0, oid_len);
-
-        if(next_node == 0xFFFF) {
+        if(next_node == 0xFFFF)
+        {
             printf("End of MIB\n");
             return 1;
         }
-
         char oid_buf[256];
         get_full_oid(next_node, oid_buf);
     #if LOG_LEVEL < LOG_LEVEL_INFO

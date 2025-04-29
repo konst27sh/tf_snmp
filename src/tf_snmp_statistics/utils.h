@@ -5,6 +5,8 @@
 #ifndef TF_SNMP_UTILS_H
 #define TF_SNMP_UTILS_H
 
+#include <jansson.h>
+
 #ifdef DEBUG
 // Уровни логирования (числовые значения)
 #define LOG_LEVEL_DEV   0
@@ -48,6 +50,8 @@
     #define LOG_FATAL(fmt, ...) do {} while(0)
 #endif
 
-int getData_formJson(char* json_data, const char *option, char *data);
+json_t* getData_formJson(char* json_data);
+uint16_t int_to_string(int num, char *str);
+
 
 #endif //TF_SNMP_UTILS_H
