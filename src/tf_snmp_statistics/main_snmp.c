@@ -1,11 +1,9 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include "../version.h"
 
 #include "tf_snmp_module.h"
 #include "utils.h"
-#include "tf_snmp_module.h"
 #include "poeStatus/poeStatus_main.h"
 
 int main(const int argc, char **argv) {
@@ -36,7 +34,6 @@ int main(const int argc, char **argv) {
 
     if(strcmp(argv[1], "-g") == 0) {
         uint16_t node = find_oid_node(oid, oid_len);
-        //print_tree_debug(node, node);
         if(node == 0xFFFF) {
             LOG_INFO("OID not found\n");
             return 1;
@@ -58,9 +55,7 @@ int main(const int argc, char **argv) {
         }
         char oid_buf[256];
         get_full_oid(next_node, oid_buf);
-    #if LOG_LEVEL < LOG_LEVEL_INFO
-        print_tree_debug(next_node, next_node);
-    #endif
+
         print_node_info(next_node);
     }
     else {
@@ -69,9 +64,3 @@ int main(const int argc, char **argv) {
     }
     return 0;
 }
-
-// LOG_DEBUG("Это отладка");   // Выводится, если LOG_LEVEL <= 0
-// LOG_INFO("Информация");     // Выводится, если LOG_LEVEL <= 1
-// LOG_WARN("Предупреждение"); // Выводится, если LOG_LEVEL <= 2
-// LOG_ERROR("Ошибка");        // Выводится, если LOG_LEVEL <= 3
-// LOG_FATAL("Критично");      // Выводится, если LOG_LEVEL <= 4

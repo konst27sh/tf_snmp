@@ -244,7 +244,6 @@ void print_node_info(uint16_t node_idx) {
     char oid_buf[256];
     char oid[256];
     get_full_oid(node_idx, oid_buf);
-    strcpy(oid, "1.");
     strcat(oid, oid_buf);
     #if LOG_LEVEL > LOG_LEVEL_INFO
         printf("%s\n", oid);
