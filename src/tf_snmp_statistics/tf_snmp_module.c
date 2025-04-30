@@ -1,25 +1,21 @@
 //
-// Created by sheverdin on 4/21/25.
+// Created by sheverdin on 4/30/25.
 //
 
 #include <string.h>
 #include <stdlib.h>
-#include "../utils.h"
-#include "poeStatus_main.h"
-#include "poe_handlers.h"
 
-// Данные для 8 портов (отдельные массивы для каждого параметра)
-int port_indexes[POE_PORTS] = {1, 2, 3, 4, 5, 6, 7, 8}; // Индексы портов
-int port_states[POE_PORTS] = {11, 22, 33, 44, 55, 66, 77, 88};  // Состояния (1=up, 2=down)
-int port_powers[POE_PORTS] = {1001, 1002, 1003, 1004, 1005, 1006, 1007, 1008}; // Мощность (mW)
+#include "tf_snmp_module.h"
+#include "statusPSW/poeStatus/poeStatus_main.h"
+#include "utils/debug.h"
 
 
 Tree_NodeClass node_pool[MAX_NODES];
 uint16_t node_count = 0;
 
-// Добавление узла в дерево
 uint16_t add_node(int oid_component, const char *name, NodeType type,
-                  uint16_t parent_idx, void *data, HandlerFunc handler) {
+                  uint16_t parent_idx, void *data, HandlerFunc handler)
+{
     if(node_count >= MAX_NODES)
     {
         printf("Error: Node pool overflow\n");
@@ -59,51 +55,6 @@ uint16_t add_node(int oid_component, const char *name, NodeType type,
     return node_count++;
 }
 
-// Инициализация дерева согласно MIB
-void init_mib_tree()
-{
-    LOG_DEV("Initializing MIB tree...\n");
-    // Корневая ветка
-    uint16_t root = add_node(1, "iso", NODE_INTERNAL, 0xFFFF, NULL, NULL);
-    uint16_t org = add_node(3, "org", NODE_INTERNAL, root, NULL, NULL);
-    uint16_t dod = add_node(6, "dod", NODE_INTERNAL, org, NULL, NULL);
-    uint16_t internet = add_node(1, "internet", NODE_INTERNAL, dod, NULL, NULL);
-    uint16_t private = add_node(4, "private", NODE_INTERNAL, internet, NULL, NULL);
-    uint16_t enterprises = add_node(1, "enterprises", NODE_INTERNAL, private, NULL, NULL);
-    uint16_t forttelecom = add_node(42019, "forttelecomMIB", NODE_INTERNAL, enterprises, NULL, NULL);
-
-    // Ветка switch
-    uint16_t sw = add_node(3, "switch", NODE_INTERNAL, forttelecom, NULL, NULL);
-    uint16_t psw = add_node(2, "psw", NODE_INTERNAL, sw, NULL, NULL);
-    uint16_t statusPSW = add_node(2, "statusPSW", NODE_INTERNAL, psw, NULL, NULL);
-    uint16_t poeStatus = add_node(5, "poeStatus", NODE_INTERNAL, statusPSW, NULL, NULL);
-
-    // Таблица poeStatus
-    LOG_DEV("Status");
-    uint16_t poeTable = add_node(1, "poeStatusTable", NODE_INTERNAL, poeStatus, NULL, NULL);
-    uint16_t poeEntry = add_node(1, "poeStatusEntry", NODE_INTERNAL, poeTable, NULL,NULL);
-
-    // Колонки таблицы
-    LOG_DEV("table");
-    const char *columns[] = {"portPoeStatusIndex", "portPoeStatusState", "portPoeStatusPower"};
-    for(int col = 0; col < 3; col++) {
-        uint16_t col_node = add_node(col+1, columns[col], NODE_INTERNAL, poeEntry, NULL, NULL);
-
-        // Добавляем порты
-        LOG_DEV("PORTS");
-        for(int port = 1; port <= POE_PORTS; port++)
-        {
-            void *data = NULL;
-            HandlerFunc poeHandlers[] = {
-                get_poeIndex,
-                get_poeStatus,
-                get_poePower
-            };
-            add_node(port, "portEntry", NODE_LEAF_INT, col_node, data, poeHandlers[col]);
-        }
-    }
-}
-
 // Преобразует строку OID в массив чисел
 int parse_oid(const char *oid_str, int *oid_buf)
 {
@@ -120,7 +71,7 @@ int parse_oid(const char *oid_str, int *oid_buf)
     return count;
 }
 
-uint16_t find_oid_node(const int *oid, int oid_len) 
+uint16_t find_oid_node(const int *oid, int oid_len)
 {
     uint16_t current_node = 0;
     LOG_DEBUG("oid_len = %d", oid_len);
@@ -185,7 +136,6 @@ uint16_t get_next_oid(uint16_t current_idx, const int *oid, int depth) {
         }
         node = (node->staticTreeNode.next_sibling_idx != 0) ? &node_pool[node->staticTreeNode.next_sibling_idx] : NULL;
     }
-
     return 0;
 }
 
@@ -221,15 +171,16 @@ void print_tree_debug(uint16_t node_idx, int level)
     char oid_buf[256];
     get_full_oid(node_idx, oid_buf);
 
-    for(int i = 0; i < level; i++) printf("  ");
-       printf("\n%s - OID: %s,  P: %d, C: %d, S: %d, INDEX: %d",
+    for(int i = 0; i < level; i++)
+        printf("  ");
+    printf("\n%s - OID: %s,  P: %d, C: %d, S: %d, INDEX: %d",
            node->staticTreeNode.name,
            oid_buf,
-               node->staticTreeNode.parent_idx,
-               node->staticTreeNode.first_child_idx,
-               node->staticTreeNode.next_sibling_idx,
-               node->staticTreeNode.oid_component
-               );
+           node->staticTreeNode.parent_idx,
+           node->staticTreeNode.first_child_idx,
+           node->staticTreeNode.next_sibling_idx,
+           node->staticTreeNode.oid_component
+    );
 
     if(node->staticTreeNode.first_child_idx != 0xFFFF) {
         print_tree_debug(node->staticTreeNode.first_child_idx, level + 1);
@@ -245,13 +196,13 @@ void print_node_info(uint16_t node_idx) {
     char oid[256];
     get_full_oid(node_idx, oid_buf);
     strcat(oid, oid_buf);
-    #if LOG_LEVEL > LOG_LEVEL_INFO
-        printf("%s\n", oid);
-        printf("%s\n", node_type_to_str(node->staticTreeNode.type));
-    #else
-        LOG_INFO("%s", oid_buf);
+#if LOG_LEVEL > LOG_LEVEL_INFO
+    printf("%s\n", oid);
+    printf("%s\n", node_type_to_str(node->staticTreeNode.type));
+#else
+    LOG_INFO("%s", oid_buf);
         LOG_INFO("%s", node_type_to_str(node->staticTreeNode.type));
-    #endif
+#endif
 
     if (node->staticTreeNode.type != NODE_INTERNAL)
     {
@@ -355,3 +306,8 @@ uint16_t find_parent(uint16_t node_idx) {
     if(node_idx >= node_count) return 0xFFFF;
     return node_pool[node_idx].staticTreeNode.parent_idx;
 }
+
+// STATIC FUNCTION
+
+
+

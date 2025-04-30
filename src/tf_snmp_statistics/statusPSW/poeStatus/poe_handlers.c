@@ -6,7 +6,8 @@
 #include <string.h>
 #include <stdint.h>
 
-#include "../utils.h"
+#include "../../utils/utils.h"
+#include "../../utils/debug.h"
 #include "poe_handlers.h"
 
 static int get_poeIinfo(uint16_t port, char *res);

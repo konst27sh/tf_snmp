@@ -2,11 +2,8 @@
 // Created by sheverdin on 4/18/25.
 //
 
-#include <stdio.h>
 #include "utils.h"
-#include <string.h>
-#include <stdio.h>
-#include <stdint.h>
+#include "debug.h"
 
 json_t* getData_formJson(char* json_data) {
     json_t *root = NULL;

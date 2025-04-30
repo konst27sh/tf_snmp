@@ -1,11 +1,9 @@
 //
-// Created by sheverdin on 4/18/25.
+// Created by sheverdin on 4/30/25.
 //
 
-#ifndef TF_SNMP_UTILS_H
-#define TF_SNMP_UTILS_H
-
-#include <jansson.h>
+#ifndef TF_SNMP_DEBUG_H
+#define TF_SNMP_DEBUG_H
 
 #ifdef DEBUG
 // Уровни логирования (числовые значения)
@@ -18,7 +16,7 @@
 
 // Установка уровня по умолчанию
 #ifndef LOG_LEVEL
-    #define LOG_LEVEL LOG_LEVEL_ERROR
+#define LOG_LEVEL LOG_LEVEL_ERROR
 #endif
 
 // Базовый макрос
@@ -42,7 +40,7 @@
 #define LOG_ERROR(fmt, ...) LOG_PRINT("ERROR", "31", LOG_LEVEL_ERROR, fmt, ##__VA_ARGS__)
 #define LOG_FATAL(fmt, ...) LOG_PRINT("FATAL", "35", LOG_LEVEL_FATAL, fmt, ##__VA_ARGS__)
 #else
-    #define LOGDEV(fmt, ...)    do {} while(0)
+#define LOGDEV(fmt, ...)    do {} while(0)
     #define LOG_DEBUG(fmt, ...) do {} while(0)
     #define LOG_INFO(fmt, ...)  do {} while(0)
     #define LOG_WARN(fmt, ...)  do {} while(0)
@@ -50,8 +48,4 @@
     #define LOG_FATAL(fmt, ...) do {} while(0)
 #endif
 
-json_t* getData_formJson(char* json_data);
-uint16_t int_to_string(int num, char *str);
-
-
-#endif //TF_SNMP_UTILS_H
+#endif //TF_SNMP_DEBUG_H

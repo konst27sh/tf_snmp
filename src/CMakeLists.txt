@@ -4,9 +4,9 @@ project(tf_snmp C)
 set(CMAKE_C_STANDARD 17)
 
 set(PROJECT_VERSION_MAJOR 1)
-set(PROJECT_VERSION_MINOR 3)
-set(PROJECT_VERSION_PATCH 6)
-set(PROJECT_LOG_LEVEL 3)
+set(PROJECT_VERSION_MINOR 1)
+set(PROJECT_VERSION_PATCH 1)
+set(PROJECT_LOG_LEVEL 1)
 set(DEBUG_ENABLE 1)
 
 set(PROJECT_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}-${PROJECT_VERSION_PATCH}")
@@ -34,14 +34,23 @@ set(CMAKE_EXE_LINKER_FLAGS "-lnetsnmp")
 # Исходные файлы
 set(SOURCES
         tf_snmp_statistics/main_snmp.c
-        tf_snmp_statistics/utils.c
-        tf_snmp_statistics/utils.h
+        tf_snmp_statistics/utils/utils.c
+        tf_snmp_statistics/utils/utils.h
         tf_snmp_statistics/tf_snmp_module.h
-    version.h
-        tf_snmp_statistics/poeStatus/poeStatus_main.c
-        tf_snmp_statistics/poeStatus/poeStatus_main.h
-        tf_snmp_statistics/poeStatus/poe_handlers.c
-        tf_snmp_statistics/poeStatus/poe_handlers.h
+        tf_snmp_statistics/statusPSW/poeStatus/poeStatus_main.c
+        tf_snmp_statistics/statusPSW/poeStatus/poeStatus_main.h
+        tf_snmp_statistics/statusPSW/poeStatus/poe_handlers.c
+        tf_snmp_statistics/statusPSW/poeStatus/poe_handlers.h
+        tf_snmp_statistics/statusPSW/statusPSW_main.c
+        tf_snmp_statistics/statusPSW/statusPSW_main.h
+        tf_snmp_statistics/tf_snmp_module.c
+        tf_snmp_statistics/utils/debug.c
+        tf_snmp_statistics/utils/debug.h
+        version.h
+        tf_snmp_statistics/configPSW/autoRestart/autoRestart_main.c
+        tf_snmp_statistics/configPSW/autoRestart/autoRestart_main.h
+        tf_snmp_statistics/configPSW/configPSW_main.c
+        tf_snmp_statistics/configPSW/configPSW_main.h
 )
 
 # Создание исполняемого файла

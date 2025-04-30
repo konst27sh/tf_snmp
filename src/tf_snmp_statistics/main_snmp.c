@@ -3,8 +3,13 @@
 #include "../version.h"
 
 #include "tf_snmp_module.h"
-#include "utils.h"
-#include "poeStatus/poeStatus_main.h"
+#include "utils/debug.h"
+#include "configPSW/configPSW_main.h"
+#include "statusPSW/statusPSW_main.h"
+#include "statusPSW/poeStatus/poeStatus_main.h"
+
+static void init_mib_tree(void);
+static uint16_t init_mib_tree_main(void);
 
 int main(const int argc, char **argv) {
     LOG_DEBUG("Start %s v%d.%d.%d", // Добавлен APP_VERSION_PATCH
@@ -64,3 +69,31 @@ int main(const int argc, char **argv) {
     }
     return 0;
 }
+
+static void init_mib_tree(void)
+{
+    uint16_t psw = init_mib_tree_main();
+    uint16_t configPSW = init_mib_configPSW(psw);
+    uint16_t statusPSW = init_mib_statusPSW(psw);
+    uint16_t last_parent_indx = init_mib_tree_poeStatus(statusPSW);
+}
+
+static uint16_t init_mib_tree_main(void)
+{
+    LOG_DEV("Initializing MIB tree...\n");
+    // Корневая ветка
+    uint16_t root = add_node(1, "iso", NODE_INTERNAL, 0xFFFF, NULL, NULL);
+    uint16_t org = add_node(3, "org", NODE_INTERNAL, root, NULL, NULL);
+    uint16_t dod = add_node(6, "dod", NODE_INTERNAL, org, NULL, NULL);
+    uint16_t internet = add_node(1, "internet", NODE_INTERNAL, dod, NULL, NULL);
+    uint16_t private = add_node(4, "private", NODE_INTERNAL, internet, NULL, NULL);
+    uint16_t enterprises = add_node(1, "enterprises", NODE_INTERNAL, private, NULL, NULL);
+    uint16_t forttelecom = add_node(42019, "forttelecomMIB", NODE_INTERNAL, enterprises, NULL, NULL);
+
+    uint16_t sw = add_node(3, "switch", NODE_INTERNAL, forttelecom, NULL, NULL);
+    uint16_t psw = add_node(2, "psw", NODE_INTERNAL, sw, NULL, NULL);
+    return psw;
+}
+
+
+
