@@ -33,23 +33,24 @@ uint16_t add_node(int oid_component, const char *name, NodeType type,
     node->handlerFunc = handler;
 
     // Связывание с родителем
-    if (parent_idx != 0xFFFF && parent_idx < node_count) {
-        Tree_NodeClass *parent = &node_pool[parent_idx];
+    if (parent_idx != 0xFFFF && parent_idx < node_count)
+        {
+            Tree_NodeClass *parent = &node_pool[parent_idx];
 
-        // Добавляем как первого ребенка или к sibling цепи
-        if (parent->staticTreeNode.first_child_idx == 0xFFFF)
-        {
-            parent->staticTreeNode.first_child_idx = node_count;
-        }
-        else
-        {
-            uint16_t sibling = parent->staticTreeNode.first_child_idx;
-            while (node_pool[sibling].staticTreeNode.next_sibling_idx != 0xFFFF)
+            // Добавляем как первого ребенка или к sibling цепи
+            if (parent->staticTreeNode.first_child_idx == 0xFFFF)
             {
-                sibling = node_pool[sibling].staticTreeNode.next_sibling_idx;
+                parent->staticTreeNode.first_child_idx = node_count;
             }
-            node_pool[sibling].staticTreeNode.next_sibling_idx = node_count;
-        }
+            else
+            {
+                uint16_t sibling = parent->staticTreeNode.first_child_idx;
+                while (node_pool[sibling].staticTreeNode.next_sibling_idx != 0xFFFF)
+                {
+                    sibling = node_pool[sibling].staticTreeNode.next_sibling_idx;
+                }
+                node_pool[sibling].staticTreeNode.next_sibling_idx = node_count;
+            }
     }
     LOG_DEV("Added node: %s (idx: %d, parent: %d)", name, node_count, parent_idx);
     return node_count++;
@@ -171,9 +172,12 @@ void print_tree_debug(uint16_t node_idx, int level)
     char oid_buf[256];
     get_full_oid(node_idx, oid_buf);
 
-    for(int i = 0; i < level; i++)
-        printf("  ");
-    printf("\n%s - OID: %s,  P: %d, C: %d, S: %d, INDEX: %d",
+    for(int i = 0; i < level; i++) {
+        printf("- ");
+        fflush(stdout);
+    }
+
+    printf("%s - OID: %s, P: %d, C: %d, S: %d, INDEX: %d\n",
            node->staticTreeNode.name,
            oid_buf,
            node->staticTreeNode.parent_idx,

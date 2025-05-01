@@ -6,6 +6,7 @@
 #include "utils/debug.h"
 #include "configPSW/configPSW_main.h"
 #include "statusPSW/statusPSW_main.h"
+#include "configPSW/autoRestart/autoRestart_main.h"
 #include "statusPSW/poeStatus/poeStatus_main.h"
 
 static void init_mib_tree(void);
@@ -35,6 +36,7 @@ int main(const int argc, char **argv) {
     #if LOG_LEVEL < LOG_LEVEL_INFO
         LOG_DEBUG("Full MIB structure:\n");
         print_tree_debug(0, 0);
+        printf("----------->>>>>>>>>>>>>>>>>>>>>>>>>\n");
     #endif
 
     if(strcmp(argv[1], "-g") == 0) {
@@ -74,8 +76,9 @@ static void init_mib_tree(void)
 {
     uint16_t psw = init_mib_tree_main();
     uint16_t configPSW = init_mib_configPSW(psw);
+    uint16_t config_ar = init_mib_tree_autoRestart(configPSW);
     uint16_t statusPSW = init_mib_statusPSW(psw);
-    uint16_t last_parent_indx = init_mib_tree_poeStatus(statusPSW);
+    uint16_t poeStatus = init_mib_tree_poeStatus(statusPSW);
 }
 
 static uint16_t init_mib_tree_main(void)
@@ -94,6 +97,3 @@ static uint16_t init_mib_tree_main(void)
     uint16_t psw = add_node(2, "psw", NODE_INTERNAL, sw, NULL, NULL);
     return psw;
 }
-
-
-

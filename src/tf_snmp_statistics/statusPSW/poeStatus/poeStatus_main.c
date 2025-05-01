@@ -10,8 +10,8 @@
 // Инициализация дерева согласно MIB
 uint16_t init_mib_tree_poeStatus(uint16_t parent_index)
 {
-    int psw = parent_index;
-    uint16_t statusPSW = add_node(2, "statusPSW", NODE_INTERNAL, psw, NULL, NULL);
+    int statusPSW = parent_index;
+    //uint16_t statusPSW = add_node(2, "statusPSW", NODE_INTERNAL, psw, NULL, NULL);
     uint16_t poeStatus = add_node(5, "poeStatus", NODE_INTERNAL, statusPSW, NULL, NULL);
 
     // Таблица poeStatus
@@ -21,10 +21,10 @@ uint16_t init_mib_tree_poeStatus(uint16_t parent_index)
 
     // Колонки таблицы
     LOG_DEV("table");
-    const char *columns[] = {"portPoeStatusIndex", "portPoeStatusState", "portPoeStatusPower"};
+    const char *poe_columns[] = {"portPoeStatusIndex", "portPoeStatusState", "portPoeStatusPower"};
     for(int col = 0; col < 3; col++)
     {
-        uint16_t col_node = add_node(col+1, columns[col], NODE_INTERNAL, poeEntry, NULL, NULL);
+        uint16_t col_node = add_node(col+1, poe_columns[col], NODE_INTERNAL, poeEntry, NULL, NULL);
 
         // Добавляем порты
         LOG_DEV("PORTS");

@@ -12,9 +12,9 @@
 #define POE_PORTS 8       // Портов на параметр
 #define POE_NODES (12 + 1 + POE_PARAMS * (1 + POE_PORTS)) // 12+1+3*9=40
 
-#define MAX_NODES (POE_NODES * 2) // 80
+#define MAX_NODES (500) //(POE_NODES * 2) // 80
 #define MAX_OID_LEN 64
-#define MAX_OID_DEPTH 14
+#define MAX_OID_DEPTH 15
 
 typedef unsigned long oid;
 

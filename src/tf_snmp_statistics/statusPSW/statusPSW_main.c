@@ -6,6 +6,6 @@
 
 uint16_t init_mib_statusPSW(uint16_t parent)
 {
-    uint16_t statusPSW = add_node(1, "statusPSW", NODE_INTERNAL, parent, NULL, NULL);
+    uint16_t statusPSW = add_node(2, "statusPSW", NODE_INTERNAL, parent, NULL, NULL);
     return statusPSW;
 }
