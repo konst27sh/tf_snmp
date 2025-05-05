@@ -6,7 +6,7 @@ set(CMAKE_C_STANDARD 17)
 set(PROJECT_VERSION_MAJOR 1)
 set(PROJECT_VERSION_MINOR 1)
 set(PROJECT_VERSION_PATCH 1)
-set(PROJECT_LOG_LEVEL 1)
+set(PROJECT_LOG_LEVEL 3)
 set(DEBUG_ENABLE 1)
 
 set(PROJECT_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}-${PROJECT_VERSION_PATCH}")
@@ -46,11 +46,27 @@ set(SOURCES
         tf_snmp_statistics/tf_snmp_module.c
         tf_snmp_statistics/utils/debug.c
         tf_snmp_statistics/utils/debug.h
-        version.h
         tf_snmp_statistics/configPSW/autoRestart/autoRestart_main.c
         tf_snmp_statistics/configPSW/autoRestart/autoRestart_main.h
         tf_snmp_statistics/configPSW/configPSW_main.c
         tf_snmp_statistics/configPSW/configPSW_main.h
+        version.h
+        tf_snmp_statistics/configPSW/portPoe/portPoE_main.c
+        tf_snmp_statistics/configPSW/portPoe/portPoE_main.h
+        tf_snmp_statistics/configPSW/outStatePSW/outStatePSW_main.c
+        tf_snmp_statistics/configPSW/outStatePSW/outStatePSW_main.h
+        tf_snmp_statistics/statusPSW/upsStatus/ups_status_main.c
+        tf_snmp_statistics/statusPSW/upsStatus/ups_status_main.h
+        tf_snmp_statistics/statusPSW/inputStatus/inputStatus_main.c
+        tf_snmp_statistics/statusPSW/inputStatus/inputStatus_main.h
+        tf_snmp_statistics/statusPSW/fwStatus/fwStatus_main.c
+        tf_snmp_statistics/statusPSW/fwStatus/fwStatus_main.h
+        tf_snmp_statistics/statusPSW/autoRestartErrors/autoRestartErrors_maiin.c
+        tf_snmp_statistics/statusPSW/autoRestartErrors/autoRestartErrors_maiin.h
+        tf_snmp_statistics/statusPSW/sfpStatus/sfpStatus.c
+        tf_snmp_statistics/statusPSW/sfpStatus/sfpStatus.h
+        tf_snmp_statistics/statusPSW/sensorEntry/sensorEntry.c
+        tf_snmp_statistics/statusPSW/sensorEntry/sensorEntry.h
 )
 
 # Создание исполняемого файла

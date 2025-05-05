@@ -2,10 +2,7 @@
 // Created by sheverdin on 4/22/25.
 //
 
-#include <stdio.h>
 #include <string.h>
-#include <stdint.h>
-
 #include "../../utils/utils.h"
 #include "../../utils/debug.h"
 #include "poe_handlers.h"

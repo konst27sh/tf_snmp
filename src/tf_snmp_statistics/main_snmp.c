@@ -5,9 +5,18 @@
 #include "tf_snmp_module.h"
 #include "utils/debug.h"
 #include "configPSW/configPSW_main.h"
-#include "statusPSW/statusPSW_main.h"
 #include "configPSW/autoRestart/autoRestart_main.h"
+#include "configPSW/portPoe/portPoE_main.h"
+#include "configPSW/outStatePSW/outStatePSW_main.h"
+
+#include "statusPSW/statusPSW_main.h"
 #include "statusPSW/poeStatus/poeStatus_main.h"
+#include "statusPSW/upsStatus/ups_status_main.h"
+#include "statusPSW/inputStatus/inputStatus_main.h"
+#include "statusPSW/fwStatus/fwStatus_main.h"
+#include "statusPSW/autoRestartErrors/autoRestartErrors_maiin.h"
+#include "statusPSW/sfpStatus/sfpStatus.h"
+#include "statusPSW/sensorEntry/sensorEntry.h"
 
 static void init_mib_tree(void);
 static uint16_t init_mib_tree_main(void);
@@ -33,7 +42,7 @@ int main(const int argc, char **argv) {
 
     init_mib_tree();
 
-    #if LOG_LEVEL < LOG_LEVEL_INFO
+    #if LOG_LEVEL < LOG_LEVEL_DEBUG
         LOG_DEBUG("Full MIB structure:\n");
         print_tree_debug(0, 0);
         printf("----------->>>>>>>>>>>>>>>>>>>>>>>>>\n");
@@ -47,7 +56,7 @@ int main(const int argc, char **argv) {
         }
         char oid_buf[256];
         get_full_oid(node, oid_buf);
-        LOG_INFO("current OID = %s", oid_buf);
+        LOG_DEBUG("current OID = %s", oid_buf);
         print_node_info(node);
     }
     else if(strcmp(argv[1], "-n") == 0) {
@@ -75,10 +84,20 @@ int main(const int argc, char **argv) {
 static void init_mib_tree(void)
 {
     uint16_t psw = init_mib_tree_main();
+
     uint16_t configPSW = init_mib_configPSW(psw);
-    uint16_t config_ar = init_mib_tree_autoRestart(configPSW);
+    init_mib_autoRestart(configPSW);
+    init_mib_portPoE(configPSW);
+    init_mib_outStatePSW(configPSW);
+
     uint16_t statusPSW = init_mib_statusPSW(psw);
-    uint16_t poeStatus = init_mib_tree_poeStatus(statusPSW);
+    init_mib_upsStatus(statusPSW);
+    init_mib_inputStatus(statusPSW);
+    init_mib_fwStatus(statusPSW);
+    init_mib_tree_poeStatus(statusPSW);
+    init_mib_autoRestartErr(statusPSW);
+    init_mib_sfpStatus(statusPSW);
+    init_mib_sensorEntry(statusPSW);
 }
 
 static uint16_t init_mib_tree_main(void)

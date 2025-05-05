@@ -21,8 +21,9 @@ typedef unsigned long oid;
 typedef enum {
     NODE_INTERNAL,
     NODE_LEAF_INT,
-    NODE_LEAF_STRING
-} NodeType;
+    NODE_LEAF_STRING,
+    NODE_LEAF_IP
+}NodeType;
 
 typedef struct {
     int oid_component;

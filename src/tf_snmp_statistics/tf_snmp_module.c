@@ -113,9 +113,11 @@ uint16_t find_oid_node(const int *oid, int oid_len)
         current_node = next_node;
     }
     LOG_DEBUG("current_node = %d", current_node);
+    LOG_DEBUG("=======================================================");
+    LOG_DEBUG("=======================================================");
+    LOG_DEBUG("=======================================================");
     return current_node;
 }
-
 
 uint16_t get_next_oid(uint16_t current_idx, const int *oid, int depth) {
     if (current_idx >= node_count) return 0;
@@ -199,32 +201,24 @@ void print_node_info(uint16_t node_idx) {
     char oid_buf[256];
     char oid[256];
     get_full_oid(node_idx, oid_buf);
-    strcat(oid, oid_buf);
 #if LOG_LEVEL > LOG_LEVEL_INFO
-    printf("%s\n", oid);
+    printf("%s\n", oid_buf);
     printf("%s\n", node_type_to_str(node->staticTreeNode.type));
 #else
     LOG_INFO("%s", oid_buf);
-        LOG_INFO("%s", node_type_to_str(node->staticTreeNode.type));
+    LOG_INFO("%s", node_type_to_str(node->staticTreeNode.type));
 #endif
 
     if (node->staticTreeNode.type != NODE_INTERNAL)
     {
-        if (node->staticTreeNode.type == NODE_LEAF_INT)
+        if (node->handlerFunc != NULL)
         {
-            if (node->handlerFunc != NULL)
-            {
-                node->handlerFunc(&node->staticTreeNode);
-            }
-            else
-            {
-                printf("N/A (handler missing)\n");
-            }
+            node->handlerFunc(&node->staticTreeNode);
         }
-        //else
-        //{
-        //    printf("%s\n", (char *)node->staticTreeNode.data);
-        //}
+        else
+        {
+            printf("N/A (handler missing)\n");
+        }
     }
     else
     {
@@ -294,13 +288,16 @@ uint16_t find_min_subtree(uint16_t start_node) {
 
 const char* node_type_to_str(NodeType type)
 {
-    switch (type) {
+    switch (type)
+    {
         case NODE_INTERNAL:
             return "INTERNAL";
         case NODE_LEAF_INT:
             return "INTEGER";
         case NODE_LEAF_STRING:
             return "STRING";
+        case NODE_LEAF_IP:
+            return "IpAddress";
         default:
             return "UNKNOWN";
     }
