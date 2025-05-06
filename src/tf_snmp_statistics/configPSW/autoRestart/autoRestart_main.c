@@ -12,10 +12,31 @@
 #define MAX_BUFFER_SIZE 256
 #define TIME_STR_LEN 6
 
-static int get_arConfig(uint16_t port, char* option, char *res);
-static void parse_time(const char *time_str, char *hour_str, char *minute_str);
+static int get_arConfig(uint16_t port, const char* option, char *res);
+static void parse_time(const char *time_str, char *hour, char *minute);
 static void get_string_data(char *data, char *res);
+static void handle_generic_get(StaticTreeNode *node, const char *option,
+                               NodeType nodeType, const char *default_val);
 
+typedef struct
+{
+    const char *option;
+    NodeType nodeType;
+    const char *defaultValue;
+} ColumnConfig;
+
+static const ColumnConfig ar_columns_config[AUTO_RESTART_COL] =
+{
+    {"autoRstIndex", NODE_LEAF_INT,  NULL},
+    {"mode",         NODE_LEAF_INT,  "disabled"},
+    {"host",         NODE_LEAF_IP,   "0.0.0.0"},
+    {"min_speed",    NODE_LEAF_INT,  "0"},
+    {"max_speed",    NODE_LEAF_INT,  "0"},
+    {"timeUp",       NODE_LEAF_INT, "00"},
+    {"timeUp",       NODE_LEAF_INT, "00"},
+    {"timeDown",     NODE_LEAF_INT, "00"},
+    {"timeDown",     NODE_LEAF_INT, "00"}
+};
 
 const char *ar_columns[AUTO_RESTART_COL] = {
     "autoRstIndex",
@@ -46,15 +67,48 @@ const char *ar_mode[AR_MODE] =
     "speed",
 };
 
-void get_autoRstIndex(StaticTreeNode *node)
+void get_autoRstMode(StaticTreeNode *node)
 {
-    #if (LOG_LEVEL <= LOG_LEVEL_INFO)
-        LOG_FATAL("get_autoRstIndex Port = %d", node->oid_component);
-    #else
-        printf("%d\n", node->oid_component);
-    #endif
+    handle_generic_get(node, "mode",      NODE_LEAF_INT,  "disabled");
 }
 
+void get_autoRstDstIP(StaticTreeNode *node)
+{
+    handle_generic_get(node, "host",      NODE_LEAF_IP,   "255.255.255.255");
+}
+void get_autoRstSpeedDown(StaticTreeNode *node)
+{
+    handle_generic_get(node, "min_speed", NODE_LEAF_INT,  "0");
+}
+
+void get_autoRstSpeedUp(StaticTreeNode *node)
+{
+    handle_generic_get(node, "max_speed", NODE_LEAF_INT,  "0");
+}
+
+void get_autoReStartTimeOnHour(StaticTreeNode *node)
+{
+    handle_generic_get(node, "timeUp", NODE_LEAF_INT, "00");
+}
+void get_autoReStartTimeOnMin(StaticTreeNode *node)
+{
+    handle_generic_get(node,    "timeUp",    NODE_LEAF_INT, "00");
+}
+void get_autoReStartTimeOffHour(StaticTreeNode *node)
+{
+    handle_generic_get(node,    "timeDown",  NODE_LEAF_INT, "00");
+}
+void get_autoReStartTimeOffMin(StaticTreeNode *node)
+{
+    handle_generic_get(node,    "timeDown",  NODE_LEAF_INT, "00");
+}
+
+void get_autoRstIndex(StaticTreeNode *node)
+{
+    printf("%d\n", node->oid_component);
+}
+
+#if 0
 void get_autoRstMode(StaticTreeNode *node)
 {
     char data[256];
@@ -215,6 +269,7 @@ void get_autoReStartTimeOffMin(StaticTreeNode *node)
         printf("%s\n", min);
     #endif
 }
+#endif
 
 uint16_t init_mib_autoRestart(uint16_t parent_index)
 {
@@ -243,13 +298,49 @@ uint16_t init_mib_autoRestart(uint16_t parent_index)
         {
             void *data = NULL;
             NodeType nodeType = col == 2 ? NODE_LEAF_IP : NODE_LEAF_INT;
-            add_node(port, "arConfig_portEntry", nodeType, col_node, data, arHandlers[col]);
+            add_node(port, ar_columns[col],  ar_columns_config[col].nodeType, col_node, data, arHandlers[col]);
         }
     }
     return ar_entry;
 }
 
-static int get_arConfig(uint16_t port, char* option, char *res)
+static void handle_generic_get(StaticTreeNode *node, const char *option,
+                               NodeType nodeType, const char *default_val)
+{
+    char data[MAX_BUFFER_SIZE] = {0};
+    char result[MAX_BUFFER_SIZE] = {0};
+    strncpy(result, default_val, MAX_BUFFER_SIZE-1);
+    AR_MODE_e  arMode = disabled;
+    get_arConfig(node->oid_component, option, data);
+    get_string_data(data, result);
+
+    if (strcmp(node->name, "autoRstMode") == 0)
+    {
+        for (AR_MODE_e i = 0; i < AR_MODE; i++) {
+            if (strcmp(result, ar_mode[i]) == 0) {
+                arMode = i;
+                break;
+            }
+        }
+        printf("%d\n", arMode);
+    }
+    else if (strstr(node->name, "autoReStartTime"))
+    {
+        char hour[3], min[3];
+        strcpy(hour, default_val);
+        strcpy(min, default_val);
+        hour[2] = '\0';
+        min[2]  = '\0';
+        parse_time(result, hour, min);
+        printf("%s\n", (strstr(node->name, "Hour")) ? hour : min);
+    }
+    else
+    {
+        printf("%s\n", result);
+    }
+}
+
+static int get_arConfig(uint16_t port, const char* option, char *res)
 {
     if (port < 1 || port > 8)
         return 1;
@@ -267,25 +358,20 @@ static int get_arConfig(uint16_t port, char* option, char *res)
     return 0;
 }
 
-static void parse_time(const char *time_str, char *hour_str, char *minute_str)
+static void parse_time(const char *time_str, char *hour, char *minute)
 {
-    char *copy = strdup(time_str);
-    if (copy != NULL) {
 
-        char *hour_str_tmp = strtok(copy, ":");
-        char *minute_str_tmp = strtok(NULL, "");
+    char copy[TIME_STR_LEN];
+    strncpy(copy, time_str, TIME_STR_LEN-1);
+    copy[TIME_STR_LEN-1] = '\0';
 
-        if (hour_str_tmp != NULL && minute_str_tmp != NULL) {
-            strcpy(hour_str, "");
-            strncpy(hour_str, hour_str_tmp, 2);
-            hour_str[2] = '\0';
-
-            strcpy(minute_str, "");
-            strncpy(minute_str, minute_str_tmp, 2);
-            minute_str[2] = '\0';
-        }
-    }
-    free(copy);
+    char *ptr = strtok(copy, ":");
+    if (ptr != NULL)
+        strncpy(hour, ptr, 2);
+    ptr = strtok(NULL, ":");
+    if (ptr != NULL )
+        strncpy(minute, ptr, 2);
+    hour[2] = minute[2] = '\0';
 }
 
 static void get_string_data(char *data, char *res)
@@ -293,11 +379,11 @@ static void get_string_data(char *data, char *res)
     json_t *root = NULL;
     json_t *value = NULL;
     char *res_temp = NULL;
+
     if (strlen(data) != 0)
     {
         root = getData_formJson(data);
     }
-
     if (root != NULL)
     {
         value = json_object_get(root, "value");
@@ -312,9 +398,7 @@ static void get_string_data(char *data, char *res)
 
     if (res_temp != NULL)
     {
-        strcpy(res, "");
-        strcpy(res, res_temp);
-        res[strlen(res)] = '\0';
+        strncpy(res, res_temp, MAX_BUFFER_SIZE-1);
     }
 }
 
