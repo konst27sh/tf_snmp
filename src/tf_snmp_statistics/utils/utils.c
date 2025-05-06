@@ -4,6 +4,7 @@
 
 #include "utils.h"
 #include "debug.h"
+#include "string.h"
 
 json_t* getData_formJson(char* json_data) {
     json_t *root = NULL;
@@ -13,6 +14,34 @@ json_t* getData_formJson(char* json_data) {
         LOG_ERROR("error: on line %d: %s", error.line, error.text);
     }
     return root;
+}
+
+void get_string_data(char *data, char *res, const char *option)
+{
+    json_t *root = NULL;
+    json_t *value = NULL;
+    char *res_temp = NULL;
+
+    if (strlen(data) != 0)
+    {
+        root = getData_formJson(data);
+    }
+    if (root != NULL)
+    {
+        value = json_object_get(root, "option");
+        if (value != NULL)
+        {
+            if json_is_string(value)
+            {
+                res_temp = (char *)json_string_value(value);
+            }
+        }
+    }
+
+    if (res_temp != NULL)
+    {
+        strncpy(res, res_temp, MAX_BUFFER_SIZE-1);
+    }
 }
 
 uint16_t int_to_string(int num, char *str)

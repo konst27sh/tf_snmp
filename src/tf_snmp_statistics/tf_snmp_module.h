@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdint.h>
 
+
 #define POE_PARAMS 3      // Index, State, Power
 #define POE_PORTS 8       // Портов на параметр
 #define POE_NODES (12 + 1 + POE_PARAMS * (1 + POE_PORTS)) // 12+1+3*9=40

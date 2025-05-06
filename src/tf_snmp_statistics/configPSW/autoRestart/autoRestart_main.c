@@ -9,12 +9,10 @@
 
 
 #define AR_MODE (4)
-#define MAX_BUFFER_SIZE 256
-#define TIME_STR_LEN 6
+#define TIME_STR_LEN (6)
 
 static int get_arConfig(uint16_t port, const char* option, char *res);
 static void parse_time(const char *time_str, char *hour, char *minute);
-static void get_string_data(char *data, char *res);
 static void handle_generic_get(StaticTreeNode *node, const char *option,
                                NodeType nodeType, const char *default_val);
 
@@ -312,7 +310,7 @@ static void handle_generic_get(StaticTreeNode *node, const char *option,
     strncpy(result, default_val, MAX_BUFFER_SIZE-1);
     AR_MODE_e  arMode = disabled;
     get_arConfig(node->oid_component, option, data);
-    get_string_data(data, result);
+    get_string_data(data, result, "value");
 
     if (strcmp(node->name, "autoRstMode") == 0)
     {
@@ -360,7 +358,6 @@ static int get_arConfig(uint16_t port, const char* option, char *res)
 
 static void parse_time(const char *time_str, char *hour, char *minute)
 {
-
     char copy[TIME_STR_LEN];
     strncpy(copy, time_str, TIME_STR_LEN-1);
     copy[TIME_STR_LEN-1] = '\0';
@@ -374,31 +371,31 @@ static void parse_time(const char *time_str, char *hour, char *minute)
     hour[2] = minute[2] = '\0';
 }
 
-static void get_string_data(char *data, char *res)
-{
-    json_t *root = NULL;
-    json_t *value = NULL;
-    char *res_temp = NULL;
-
-    if (strlen(data) != 0)
-    {
-        root = getData_formJson(data);
-    }
-    if (root != NULL)
-    {
-        value = json_object_get(root, "value");
-        if (value != NULL)
-        {
-            if json_is_string(value)
-            {
-                res_temp = (char *)json_string_value(value);
-            }
-        }
-    }
-
-    if (res_temp != NULL)
-    {
-        strncpy(res, res_temp, MAX_BUFFER_SIZE-1);
-    }
-}
+//static void get_string_data(char *data, char *res)
+//{
+//    json_t *root = NULL;
+//    json_t *value = NULL;
+//    char *res_temp = NULL;
+//
+//    if (strlen(data) != 0)
+//    {
+//        root = getData_formJson(data);
+//    }
+//    if (root != NULL)
+//    {
+//        value = json_object_get(root, "value");
+//        if (value != NULL)
+//        {
+//            if json_is_string(value)
+//            {
+//                res_temp = (char *)json_string_value(value);
+//            }
+//        }
+//    }
+//
+//    if (res_temp != NULL)
+//    {
+//        strncpy(res, res_temp, MAX_BUFFER_SIZE-1);
+//    }
+//}
 
