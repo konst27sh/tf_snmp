@@ -7,9 +7,15 @@
 #include "../../utils/debug.h"
 #include "../../utils/utils.h"
 
+
 #define AR_MODE (4)
+#define MAX_BUFFER_SIZE 256
+#define TIME_STR_LEN 6
 
 static int get_arConfig(uint16_t port, char* option, char *res);
+static void parse_time(const char *time_str, char *hour_str, char *minute_str);
+static void get_string_data(char *data, char *res);
+
 
 const char *ar_columns[AUTO_RESTART_COL] = {
     "autoRstIndex",
@@ -53,40 +59,27 @@ void get_autoRstMode(StaticTreeNode *node)
 {
     char data[256];
     get_arConfig(node->oid_component, "mode", data);
-
-    if (strlen(data) == 0)
-    {
-        strcpy(data, "NULL");
-    }
-    json_t *root = NULL;
-    const char *status_v = NULL;
     AR_MODE_e arMode = disabled;
-    root = getData_formJson(data);
-    if (root != NULL)
-    {
-        json_t *value = json_object_get(root, "value");
-        if (value != NULL)
-        {
-            status_v = json_string_value(value);
+    char status_v[] = "";
 
-            for (AR_MODE_e i = 0; i < AR_MODE; i++)
-            {
-                if (strcmp(status_v, ar_mode[i]) == 0)
-                {
-                    arMode = i;
-                    break;
-                }
+    get_string_data(data, status_v);
+
+    if (status_v != NULL)
+    {
+        for (AR_MODE_e i = 0; i < AR_MODE; i++) {
+            if (strcmp(status_v, ar_mode[i]) == 0) {
+                arMode = i;
+                break;
             }
         }
     }
 
-    #if (LOG_LEVEL < LOG_LEVEL_INFO)
+    #if (LOG_LEVEL <= LOG_LEVEL_INFO)
         LOG_FATAL("get_autoRstMode Port = %d", node->oid_component);
-            LOG_FATAL("DATA: \n --  strlen = %lu\n", strlen(data));
-            LOG_FATAL("%s ", data);
-            LOG_FATAL("status_v = %s", status_v);
-            LOG_FATAL("arMode = %d", arMode);
-
+        LOG_FATAL("DATA: \n --  strlen = %lu\n", strlen(data));
+        LOG_FATAL("%s ", data);
+        LOG_FATAL("status_v = %s", status_v);
+        LOG_FATAL("arMode = %d", arMode);
     #else
         printf("%d\n", arMode);
     #endif
@@ -96,18 +89,16 @@ void get_autoRstDstIP(StaticTreeNode *node)
 {
     char data[256];
     get_arConfig(node->oid_component, "host", data);
+    char status_v[] = "0.0.0.0";
 
-    if (strlen(data) == 0)
-    {
-        strcpy(data, "0.0.0.0");
-    }
+    get_string_data(data, status_v);
 
     #if (LOG_LEVEL <= LOG_LEVEL_INFO)
         LOG_FATAL("get_autoRstDstIP Port = %d", node->oid_component);
-        LOG_FATAL("%s", data);
-        LOG_FATAL("DATA\n --  strlen = %lu\n", strlen(data));
+        LOG_FATAL("host: %s", status_v);
+        LOG_FATAL("DATA\n --  strlen = %lu\n", strlen(status_v));
     #else
-        printf("%s\n", data);
+        printf("%s\n", status_v);
     #endif
 }
 
@@ -115,18 +106,16 @@ void get_autoRstSpeedDown(StaticTreeNode *node)
 {
     char data[256];
     get_arConfig(node->oid_component, "min_speed", data);
-
-    if (strlen(data) == 0)
-    {
-        strcpy(data, "0");
-    }
+    char status_v[] = "0";
+    get_string_data(data, status_v);
 
     #if (LOG_LEVEL <= LOG_LEVEL_INFO)
         LOG_FATAL("get_autoRstSpeedDown Port = %d", node->oid_component);
-        LOG_FATAL("DATA\n --  strlen = %lu\n", strlen(data));
-        LOG_FATAL("%s", data);
+        LOG_FATAL("speed: %s", status_v);
+        LOG_FATAL("data: %s", data);
+
     #else
-        printf("%s\n", data);
+        printf("%s\n", status_v);
     #endif
 }
 
@@ -135,17 +124,14 @@ void get_autoRstSpeedUp(StaticTreeNode *node)
     char data[256];
     get_arConfig(node->oid_component, "max_speed", data);
 
-    if (strlen(data) == 0)
-    {
-        strcpy(data, "0");
-    }
+    char status_v[] = "0";
+    get_string_data(data, status_v);
 
     #if (LOG_LEVEL <= LOG_LEVEL_INFO)
         LOG_FATAL("get_autoRstSpeedUp Port = %d", node->oid_component);
-        LOG_FATAL("DATA\n --  strlen = %lu\n", strlen(data));
-        LOG_FATAL("%s", data);
+        LOG_FATAL("speed max: %s", status_v);
     #else
-        printf("%s\n", data);
+        printf("%s\n", status_v);
     #endif
 }
 
@@ -153,39 +139,41 @@ void get_autoReStartTimeOnHour(StaticTreeNode *node)
 {
     char data[256];
     get_arConfig(node->oid_component, "timeUp", data);
+    char status_v[6] = "00:00\n";
+    get_string_data(data, status_v);
 
-    if (strlen(data) == 0)
-    {
-        strcpy(data, "0");
-    }
+    char hour[3] = "00\n";
+    char min[3] = "00\n";
+    LOG_FATAL("Time Off status_v: %s", status_v);
+    parse_time(status_v, hour, min);
 
-#if (LOG_LEVEL <= LOG_LEVEL_INFO)
-    LOG_FATAL("get_autoReStartTimeOnHour Port = %d", node->oid_component);
-    LOG_FATAL("DATA\n --  strlen = %lu\n", strlen(data));
-    LOG_FATAL("%s", data);
-#else
-    printf("%s\n", data);
-#endif
+    #if (LOG_LEVEL <= LOG_LEVEL_INFO)
+        LOG_FATAL("get_autoReStartTimeOnHour Port = %d", node->oid_component);
+        LOG_FATAL("DATA\n --  strlen = %lu\n", strlen(data));
+        LOG_FATAL("Time On  : %s", status_v);
+        LOG_FATAL("Time On min : %s -- hour = %s", min, hour);
+    #else
+        printf("%s\n", hour);
+    #endif
 }
 
 void get_autoReStartTimeOnMin(StaticTreeNode *node)
 {
     char data[256];
     get_arConfig(node->oid_component, "timeUp", data);
+    char status_v[6] = "00:00\n";
+    get_string_data(data, status_v);
 
-    if (strlen(data) == 0)
-    {
-        strcpy(data, "0");
-    }
+    char hour[3] = "00\n";
+    char min[3] = "00\n";
+    parse_time(status_v, hour, min);
 
     #if (LOG_LEVEL <= LOG_LEVEL_INFO)
         LOG_FATAL("get_autoReStartTimeOnMin Port = %d", node->oid_component);
-        LOG_FATAL("DATA\n --  strlen = %lu\n", strlen(data));
-        LOG_FATAL("%s", data);
+        LOG_FATAL("Time On MIN : %s -- min = %s", status_v, min);
     #else
-        printf("%s\n", data);
+        printf("%s\n", min);
     #endif
-
 }
 
 void get_autoReStartTimeOffHour(StaticTreeNode *node)
@@ -193,17 +181,18 @@ void get_autoReStartTimeOffHour(StaticTreeNode *node)
     char data[256];
     get_arConfig(node->oid_component, "timeDown", data);
 
-    if (strlen(data) == 0)
-    {
-        strcpy(data, "0");
-    }
+    char status_v[6] = "00:00\n";
+    get_string_data(data, status_v);
 
+    char hour[3] = "00\n";
+    char min[3] = "00\n";
+    parse_time(status_v, hour, min);
     #if (LOG_LEVEL <= LOG_LEVEL_INFO)
         LOG_FATAL("get_autoReStartTimeOffHour Port = %d", node->oid_component);
         LOG_FATAL("DATA\n --  strlen = %lu\n", strlen(data));
-        LOG_FATAL("%s", data);
+        LOG_FATAL("Time Off Hour %s -- hour = %s", status_v, hour);
     #else
-        printf("%s\n", data);
+        printf("%s\n", hour);
     #endif
 }
 
@@ -212,17 +201,18 @@ void get_autoReStartTimeOffMin(StaticTreeNode *node)
     char data[256];
     get_arConfig(node->oid_component, "timeDown", data);
 
-    if (strlen(data) == 0)
-    {
-        strcpy(data, "0");
-    }
+    char status_v[6] = "00:00\n";
+    get_string_data(data, status_v);
+    char hour[3] = "00\n";
+    char min[3] = "00\n";
+    parse_time(status_v, hour, min);
 
     #if (LOG_LEVEL <= LOG_LEVEL_INFO)
         LOG_FATAL("get_autoReStartTimeOffMin Port = %d", node->oid_component);
         LOG_FATAL("DATA\n --  strlen = %lu\n", strlen(data));
-        LOG_FATAL("%s", data);
+        LOG_FATAL("Time Off Min: %s -- min = %s", status_v, min);
     #else
-        printf("%s\n", data);
+        printf("%s\n", min);
     #endif
 }
 
@@ -249,7 +239,6 @@ uint16_t init_mib_autoRestart(uint16_t parent_index)
     {
         uint16_t col_node = add_node(col+1, ar_columns[col], NODE_INTERNAL, ar_entry, NULL, NULL);
 
-        // Добавляем порты
         for(int port = 1; port <= POE_PORTS; port++)
         {
             void *data = NULL;
@@ -278,4 +267,54 @@ static int get_arConfig(uint16_t port, char* option, char *res)
     return 0;
 }
 
+static void parse_time(const char *time_str, char *hour_str, char *minute_str)
+{
+    char *copy = strdup(time_str);
+    if (copy != NULL) {
+
+        char *hour_str_tmp = strtok(copy, ":");
+        char *minute_str_tmp = strtok(NULL, "");
+
+        if (hour_str_tmp != NULL && minute_str_tmp != NULL) {
+            strcpy(hour_str, "");
+            strncpy(hour_str, hour_str_tmp, 2);
+            hour_str[2] = '\0';
+
+            strcpy(minute_str, "");
+            strncpy(minute_str, minute_str_tmp, 2);
+            minute_str[2] = '\0';
+        }
+    }
+    free(copy);
+}
+
+static void get_string_data(char *data, char *res)
+{
+    json_t *root = NULL;
+    json_t *value = NULL;
+    char *res_temp = NULL;
+    if (strlen(data) != 0)
+    {
+        root = getData_formJson(data);
+    }
+
+    if (root != NULL)
+    {
+        value = json_object_get(root, "value");
+        if (value != NULL)
+        {
+            if json_is_string(value)
+            {
+                res_temp = (char *)json_string_value(value);
+            }
+        }
+    }
+
+    if (res_temp != NULL)
+    {
+        strcpy(res, "");
+        strcpy(res, res_temp);
+        res[strlen(res)] = '\0';
+    }
+}
 
