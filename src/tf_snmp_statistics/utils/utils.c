@@ -28,7 +28,7 @@ void get_string_data(char *data, char *res, const char *option)
     }
     if (root != NULL)
     {
-        value = json_object_get(root, "option");
+        value = json_object_get(root,option);
         if (value != NULL)
         {
             if json_is_string(value)

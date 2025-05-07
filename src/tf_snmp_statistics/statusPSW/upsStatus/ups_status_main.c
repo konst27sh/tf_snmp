@@ -48,12 +48,13 @@ static void get_upsStatus(StaticTreeNode *node)
     strncpy(copy, node->name, 23);
     copy[23] = '\0';
     char *upsName = strtok(copy, "_");
-    LOG_FATAL("upsName %s", upsName);
+    LOG_DEBUG("upsName %s", upsName);
     get_upsData(upsName, data);
-    get_string_data(data, result, node->name);
+    get_string_data(data, result, upsName);
     LOG_DEBUG("data :");
     LOG_DEBUG("%s", data);
     LOG_DEBUG("result = %s", result);
+    printf("%s\n", result);
 }
 
 static int get_upsData(const char* upsOption, char *res)
