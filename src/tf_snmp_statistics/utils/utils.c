@@ -10,10 +10,39 @@ json_t* getData_formJson(char* json_data) {
     json_t *root = NULL;
     json_error_t error;
     root = json_loads(json_data, 0, &error);
-    if (!root) {
+    if (root == NULL )
+    {
         LOG_ERROR("error: on line %d: %s", error.line, error.text);
     }
     return root;
+}
+
+int get_i2c_Data(const char* i2c_name, char *res)
+{
+    char command[128];
+    snprintf(command, sizeof(command), "ubus call tf_hwsys getParam '{\"name\":\"%s\"}'", i2c_name);
+    LOG_DEBUG("command = %s", command);
+    FILE* fp = popen(command, "r");
+    if (!fp)
+        return 2;
+
+    size_t len = fread(res, 1, 256, fp);
+    res[len] = '\0';
+    pclose(fp);
+    return 0;
+}
+
+int get_ubus_Data(const char* command, char *res, uint16_t ubusSize)
+{
+    LOG_DEBUG("command = %s", command);
+    FILE* fp = popen(command, "r");
+    if (!fp)
+        return 2;
+
+    size_t len = fread(res, 1, ubusSize, fp);
+    res[len] = '\0';
+    pclose(fp);
+    return 0;
 }
 
 void get_string_data(char *data, char *res, const char *option)
@@ -35,6 +64,38 @@ void get_string_data(char *data, char *res, const char *option)
             {
                 res_temp = (char *)json_string_value(value);
             }
+        }
+    }
+
+    if (res_temp != NULL)
+    {
+        strncpy(res, res_temp, MAX_BUFFER_SIZE-1);
+    }
+}
+
+void get_json_data(char *data, const char *option,  const char *section, char *res)
+{
+    json_t *root = NULL;
+    json_t *value = NULL;
+    char *res_temp = NULL;
+
+    if (strlen(data) != 0)
+    {
+        root = getData_formJson(data);
+    }
+    if (root != NULL)
+    {
+        value = json_object_get(root,option);
+    }
+    if (value != NULL)
+    {
+        value = json_object_get(value,section);
+    }
+    if (value != NULL)
+    {
+        if json_is_string(value)
+        {
+            res_temp = (char *)json_string_value(value);
         }
     }
 

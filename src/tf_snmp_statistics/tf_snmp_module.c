@@ -298,6 +298,8 @@ const char* node_type_to_str(NodeType type)
             return "STRING";
         case NODE_LEAF_IP:
             return "IpAddress";
+        case OCTET_STRING:
+            return "OCTET STRING";
         default:
             return "UNKNOWN";
     }

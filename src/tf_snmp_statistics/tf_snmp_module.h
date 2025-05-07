@@ -23,7 +23,8 @@ typedef enum {
     NODE_INTERNAL,
     NODE_LEAF_INT,
     NODE_LEAF_STRING,
-    NODE_LEAF_IP
+    NODE_LEAF_IP,
+    OCTET_STRING
 }NodeType;
 
 typedef struct {

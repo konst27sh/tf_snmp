@@ -8,6 +8,7 @@
 #include "../../tf_snmp_module.h"
 
 #define INPUT_STATUS_COL (4)
+#define INPUT_STATUS_PORTS (3)
 
 uint16_t init_mib_inputStatus(uint16_t parent_index);
 

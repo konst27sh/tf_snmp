@@ -13,7 +13,6 @@ typedef enum {
     upsBatteryTime
 }SENSOR_ENTRY_e;
 
-static int get_upsData(const char* upsOption, char *res);
 static void get_upsStatus(StaticTreeNode *node);
 
 uint16_t init_mib_upsStatus(uint16_t parent_index)
@@ -42,35 +41,16 @@ static void get_upsStatus(StaticTreeNode *node)
     LOG_DEBUG("node->name %s", node->name);
     char data[MAX_BUFFER_SIZE] = {0};
     char result[MAX_BUFFER_SIZE] = {0};
-
     char copy[24];
-
     strncpy(copy, node->name, 23);
     copy[23] = '\0';
     char *upsName = strtok(copy, "_");
     LOG_DEBUG("upsName %s", upsName);
-    get_upsData(upsName, data);
+    get_i2c_Data(upsName, data);
     get_string_data(data, result, upsName);
     LOG_DEBUG("data :");
     LOG_DEBUG("%s", data);
     LOG_DEBUG("result = %s", result);
     printf("%s\n", result);
 }
-
-static int get_upsData(const char* upsOption, char *res)
-{
-    char command[128];
-    snprintf(command, sizeof(command), "ubus call tf_hwsys getParam '{\"name\":\"%s\"}'", upsOption);
-    LOG_DEBUG("command = %s", command);
-    FILE* fp = popen(command, "r");
-    if (!fp)
-        return 2;
-
-    size_t len = fread(res, 1, 256, fp);
-    res[len] = '\0';
-    pclose(fp);
-    return 0;
-}
-
-
 
