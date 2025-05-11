@@ -371,31 +371,5 @@ static void parse_time(const char *time_str, char *hour, char *minute)
     hour[2] = minute[2] = '\0';
 }
 
-//static void get_string_data(char *data, char *res)
-//{
-//    json_t *root = NULL;
-//    json_t *value = NULL;
-//    char *res_temp = NULL;
-//
-//    if (strlen(data) != 0)
-//    {
-//        root = getData_formJson(data);
-//    }
-//    if (root != NULL)
-//    {
-//        value = json_object_get(root, "value");
-//        if (value != NULL)
-//        {
-//            if json_is_string(value)
-//            {
-//                res_temp = (char *)json_string_value(value);
-//            }
-//        }
-//    }
-//
-//    if (res_temp != NULL)
-//    {
-//        strncpy(res, res_temp, MAX_BUFFER_SIZE-1);
-//    }
-//}
+
 

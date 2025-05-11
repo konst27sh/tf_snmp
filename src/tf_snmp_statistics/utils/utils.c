@@ -66,7 +66,6 @@ void get_string_data(char *data, char *res, const char *option)
             }
         }
     }
-
     if (res_temp != NULL)
     {
         strncpy(res, res_temp, MAX_BUFFER_SIZE-1);
@@ -99,6 +98,38 @@ void get_json_data(char *data, const char *option,  const char *section, char *r
         }
     }
 
+    if (res_temp != NULL)
+    {
+        strncpy(res, res_temp, MAX_BUFFER_SIZE-1);
+    }
+}
+
+void get_json_array(char *data, const char *option,  const char *section, char *res)
+{
+    json_t *root = NULL;
+    json_t *value = NULL;
+    char *res_temp = NULL;
+
+    if (strlen(data) != 0)
+    {
+        root = getData_formJson(data);
+    }
+    if (root != NULL)
+    {
+        value = json_object_get(root,option);
+    }
+    if (value != NULL)
+    {
+        value = json_array_get(value,0);
+    }
+    if (value != NULL)
+    {
+        value = json_object_get(value,section);
+    }
+    if (value != NULL)
+    {
+        res_temp = (char *) json_string_value(value);
+    }
     if (res_temp != NULL)
     {
         strncpy(res, res_temp, MAX_BUFFER_SIZE-1);
