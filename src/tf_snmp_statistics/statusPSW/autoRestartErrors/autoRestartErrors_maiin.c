@@ -73,7 +73,6 @@ void get_arPortStatus(StaticTreeNode *node)
     printf("%d\n", ar_errorRes);
 }
 
-
 uint16_t init_mib_autoRestartErr(uint16_t parent_index)
 {
     uint16_t specialStatus = add_node(6, "specialStatus", NODE_INTERNAL, parent_index, NULL, NULL);
